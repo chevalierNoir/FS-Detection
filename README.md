@@ -12,12 +12,14 @@ Run `./setup.sh` to set up environment
 
 1. Download raw ASL videos of [ChicagoFSWild/ChicagoFSWild+](https://ttic.uchicago.edu/~klivescu/ChicagoFSWild.htm). Due to copyright issues, we cannot distribute the videos. The scripts to set up the dataset from scratch with URLs will be released soon. A sample dataset can be downloaded [here](https://drive.google.com/file/d/1KFmtiwZh7ehuAdiCQYoivtK__f9Rej81/view?usp=sharing) for debugging purpose. Uncompress it into `data/`. The data folder should look like:
 
+```sh
    data/fswild/
    |-- dev.json
    |-- test.json
    |-- train.json
    |-- pose/
    `-- video/
+```
 
 2.  Training
 ```sh
