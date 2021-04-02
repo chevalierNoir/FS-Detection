@@ -44,8 +44,6 @@ See evaluation script for details. Note computing MSA/AP@Acc requires an off-the
 
 ## Reference
 
-Please cite the paper below if you use this code in your research:
-
     @inproceedings{shi2021fsdet,
       author = {Bowen Shi and Diane Brentari and Greg Shakhnarovich and Karen Livescu},
       title = {Fingerspelling Detection in American Sign Language},
