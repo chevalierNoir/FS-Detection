@@ -16,7 +16,7 @@ Run `./setup.sh` to set up environment. Youtube-dl and FFmpeg are only required 
 1. Download csv files of [ChicagoFSWild/ChicagoFSWild+](https://drive.google.com/file/d/1rDahGBMj0v-28mxyHJiZRwiFbhWF9PN_/view?usp=sharing). Use `./preproc/pipeline.sh` to set up the dataset. For example, to set up the ChicagoFSWild in folder `data/fswild`, put the csv file `ChicagoFSwild.csv` in `data/fswild` and run the following command:
 
 ```sh
-for step in {0..6};do ./preproc/pipeline.sh -d ./data/fswild/ -t ChicagoFSWild -s $step;done
+for step in {1..6};do ./preproc/pipeline.sh -d ./data/fswild/ -t ChicagoFSWild -s $step;done
 ```
 
 It will generate the following subfolder `data/fswild/loader`, where the training and evaluation are based. 
