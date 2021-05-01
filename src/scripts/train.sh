@@ -1,7 +1,7 @@
 #! /bin/bash
 
 exp_dir=data/exp/
-data_dir=data/fswild/
+data_dir=data/fswild/loader/
 step=1
 
 while test $# -gt 0;do
@@ -51,17 +51,17 @@ done
 stage1_exp=$exp_dir/stage1
 stage2_exp=$exp_dir/stage2
 
-if [ $step -le 1 ];then
+if [ $step -eq 1 ];then
     echo "Step 1: stage-1 training"
-    python train.py  --pose_coef 0.1 --fsr_coef 0.1 --det_coef 1 --reward_coef 0.1 --det_sample_rate 1  --info_interval 30 --det_interval 30 --epoch 2 --train_label $data_dir/train.json --dev_label $data_dir/dev.json --train_scp $data_dir/video/train/scp --dev_scp $data_dir/video/dev/scp --train_pose $data_dir/pose/train --dev_pose $data_dir/pose/dev --output $stage1_exp --stage 1 || exit 1;
+    python train.py  --pose_coef 0 --fsr_coef 0.1 --det_coef 1 --reward_coef 0 --det_sample_rate 1 --info_interval 1000  --det_interval 1000 --epoch 8 --train_label $data_dir/train.json --dev_label $data_dir/dev.json --train_scp $data_dir/video/train/scp --dev_scp $data_dir/video/dev/scp --output $stage1_exp --stage 1 || exit 1;
 fi
-if [ $step -le 2 ];then
+if [ $step -eq 2 ];then
     echo "Step 2: prepare bounding box for stage-2 training"
     for part in {train,dev,test};do
         python evaluate.py --config $stage1_exp/train_conf.yaml --eval_scp $data_dir/video/$part/scp --eval_label $data_dir/$part.json --output_fn $stage2_exp/bbox.pkl --eval_type bbox || exit 1;
     done
 fi
-if [ $step -le 3 ];then
+if [ $step -eq 3 ];then
     echo "Step 3: stage-2 training"
-    python train.py  --pose_coef 0.1 --fsr_coef 0.1 --det_coef 1 --reward_coef 0.1 --det_sample_rate 2  --info_interval 30 --det_interval 30 --epoch 2 --stage 2 --train_label $data_dir/train.json --dev_label $data_dir/dev.json --train_scp $data_dir/video/train/scp --dev_scp $data_dir/video/dev/scp --train_pose $data_dir/pose/train --dev_pose $data_dir/pose/dev  --output $stage2_exp --bbox_file $stage2_exp/bbox.pkl || exit 1;
+    python train.py  --pose_coef 0 --fsr_coef 0.1 --det_coef 1 --reward_coef 0 --det_sample_rate 2  --info_interval 1000 --det_interval 1000 --epoch 8 --stage 2 --train_label $data_dir/train.json --dev_label $data_dir/dev.json --train_scp $data_dir/video/train/scp --dev_scp $data_dir/video/dev/scp  --output $stage2_exp --bbox_file $stage2_exp/bbox.pkl || exit 1;
 fi

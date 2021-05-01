@@ -11,7 +11,7 @@ import torch.utils.data as tud
 
 
 class VideoData(tud.Dataset):
-    def __init__(self, label_file, scp_file, pose_file, transform, max_num_wins=20, chunk_size=300, start_end=(0, 1e6), bbox_file=None, image_scale=1, sigma=1, det_sample_rate=1, pose_sample_rate=1, fmap_wh=(12, 12)):
+    def __init__(self, label_file, scp_file, pose_file, transform, max_num_wins=30, chunk_size=300, start_end=(0, 1e6), bbox_file=None, image_scale=1, sigma=1, det_sample_rate=1, pose_sample_rate=1, fmap_wh=(12, 12)):
         self.max_num_wins = max_num_wins
         self.chunk_size = chunk_size
         self.transform = transform
@@ -41,7 +41,6 @@ class VideoData(tud.Dataset):
         bbox = self.bboxes[idx]
         opts_global, opts_local = self.opt_buffer['global'][self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate], self.opt_buffer['local'][self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate]
         imgs_global, imgs_local = self.rgb_buffer['global'][self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate], self.rgb_buffer['local'][self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate]
-
         imgs_global, imgs_local = imgs_global.transpose((0, 3, 1, 2)), imgs_local.transpose((0, 3, 1, 2))
         det_label = np.zeros((self.max_num_wins, 3), dtype=np.int32)
         det_label_ = np.array(self.det_labels[idx], dtype=np.int32)
@@ -53,6 +52,7 @@ class VideoData(tud.Dataset):
         fs_mask = -np.ones(self.max_num_wins, dtype=np.float32)
         fs_mask[:len(self.fs_masks[idx])][self.fs_masks[idx]] = 1
         fs_id = self.fs_ids[idx]
+        # print(chunk_id, fs_id, subid, self.chunk_size, len(self.bodypose_buffer), len(self.handpose_buffer), self.det_sample_rate)
         if self.open_pose is not None:
             body_kps, hand_kps = self.bodypose_buffer[self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate], self.handpose_buffer[self.chunk_size*subid: self.chunk_size*(subid+1)][::self.det_sample_rate]
             heatmap_global, mask_global = self.get_heatmap(body_kps, hand_kps, w_img=self.openpose_origin_wh[0], h_img=self.openpose_origin_wh[1], imgs=imgs_global)

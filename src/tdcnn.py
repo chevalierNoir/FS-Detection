@@ -63,7 +63,7 @@ size(-1)), mode='bilinear').squeeze(dim=1).view(batch_size, L, base_feat_unflat.
         if training:
             if pose_on:
                 origin_hw = [video_data.size(3), video_data.size(4)]
-                assert batch_size == 1
+                # assert batch_size == 1
                 pose_heatmap, pose_mask = sample['pose_heatmap_global'], sample['pose_mask_global']
                 h, w, N = pose_heatmap.size(2), pose_heatmap.size(3), pose_heatmap.size(4)
                 pose_heatmap, pose_mask = pose_heatmap.view(-1, h, w, N).permute(0, 3, 1, 2), pose_mask.view(-1, pose_mask.size(-1))
@@ -103,7 +103,7 @@ size(-1)), mode='bilinear').squeeze(dim=1).view(batch_size, L, base_feat_unflat.
         if training:
             if pose_on:
                 origin_hw = [video_data.size(3), video_data.size(4)]
-                assert batch_size == 1
+                # assert batch_size == 1
                 pose_heatmap, pose_mask = torch.cat([sample['pose_heatmap_global'], sample['pose_heatmap_local']], dim=0), torch.cat([sample['pose_mask_global'], sample['pose_mask_local']], dim=0)
                 h, w, N = pose_heatmap.size(2), pose_heatmap.size(3), pose_heatmap.size(4)
                 pose_heatmap, pose_mask = pose_heatmap.view(-1, h, w, N).permute(0, 3, 1, 2), pose_mask.view(-1, pose_mask.size(-1))

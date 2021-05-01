@@ -20,9 +20,12 @@ def generate_proposal(anchor_scales, prob_vol, delta_vol, feat_stride, nms_top_n
     prob_vol = prob_vol[:, :, 1:2] # [B, A*L, 1]
     proposals = twin_transform_inv(anchors, delta_vol, batch_size)
     mask = (proposals[:, :, 0] >= 0) & (proposals[:, :, 1] < vol_len * feat_stride)
-    if batch_size > 1:
-        raise ValueError('Flatten proposal[mask] if batch_size > 1')
-    proposals, prob_vol, delta_vol = proposals[mask].view(batch_size, -1, 2), prob_vol[mask].view(batch_size, -1, 1), delta_vol[mask].view(batch_size, -1, 2)
+
+    # if batch_size > 1:
+    #     raise ValueError('Flatten proposal[mask] if batch_size > 1')
+    # proposals, prob_vol, delta_vol = proposals[mask].view(batch_size, -1, 2), prob_vol[mask].view(batch_size, -1, 1), delta_vol[mask].view(batch_size, -1, 2)
+    mask = mask.type_as(proposals).unsqueeze(dim=-1)
+    proposals, prob_vol, delta_vol = proposals*mask, prob_vol*mask, delta_vol*mask 
     _, indexes = torch.sort(prob_vol, dim=1, descending=True)
     indexes = indexes.squeeze(dim=-1)
     props_coord, props_score = anchors.new_zeros(batch_size, nms_top_n, 2), prob_vol.new_zeros(batch_size, nms_top_n, 1)

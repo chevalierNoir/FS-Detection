@@ -49,7 +49,7 @@ class RPN(nn.Module):
         if training:
             assert gt_chunks is not None
             cls_label, reg_label = generate_label_rpn(self.anchor_scales, self.feat_stride, prob_vol.size(-1), video_len, gt_chunks, high_iou_thr=self.pos_thr, low_iou_thr=self.neg_thr)
-            prob_vol, delta_vol = prob_vol.view(batch_size, 2, -1).transpose(1, 2), delta_vol.view(batch_size, 2, -1).transpose(1, 2)
+            prob_vol, delta_vol = prob_vol.view(batch_size, 2, -1).transpose(1, 2).contiguous(), delta_vol.view(batch_size, 2, -1).transpose(1, 2).contiguous()
             cls_loss = log_loss(prob_vol, cls_label)
             reg_loss = smooth_l1_loss(delta_vol, reg_label, cls_label)
         else:

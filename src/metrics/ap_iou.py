@@ -125,7 +125,7 @@ def get_precision_per_sample(pred_pkl, stat_pkl, iou_thr=0.5, recall_thr=0.5):
 
 def get_ap_iou(pred_pkl, iou_thrs=[0.1, 0.2, 0.3, 0.4, 0.5], ptype='coco'):
     stat_pkl, result_txt = pred_pkl + ".tmp", pred_pkl + '.iou'
-    get_mAP(pred_pkl, stat_pkl, iou_thrs=[0.1, 0.2, 0.3, 0.4, 0.5], ordering=True)
+    get_mAP(pred_pkl, stat_pkl, iou_thrs=iou_thrs, ordering=True)
     iou_to_mAP = compute_mAP_from_stat(stat_pkl, ptype)
     print(f"Write AP@IoU into {result_txt}")
     with open(result_txt, 'w') as fo:

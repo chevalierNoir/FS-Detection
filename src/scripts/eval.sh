@@ -1,7 +1,7 @@
 #! /bin/bash
 
 exp_dir=data/exp/
-data_dir=data/fswild/
+data_dir=data/fswild/loader/
 stage=1
 rec_path=data/eval_ckpt/fswild.pth # path of a trained recognizer
 

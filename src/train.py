@@ -42,7 +42,7 @@ parser.add_argument('--epoch', type=int, default=10, help='training epochs')
 parser.add_argument('--info_interval', type=int, default=100, help='print intervals')
 parser.add_argument('--det_interval', type=int, default=1000, help='saving interval for detector')
 parser.add_argument('--output', type=str, help='output dir')
-parser.add_argument('--cont', action='store_true', help='resume training from checkpoint')
+# parser.add_argument('--cont', action='store_true', help='resume training from checkpoint')
 parser.add_argument('--image_scale', type=float, default=0.3, help='image scale')
 parser.add_argument('--immean', type=float, nargs='+', default=[0.485, 0.456, 0.406], help='image mean')
 parser.add_argument('--imstd', type=float, nargs='+', default=[0.229, 0.224, 0.225], help='image std')
@@ -51,6 +51,7 @@ parser.add_argument('--path_pose', type=str, default=None, help='path to pre-tra
 parser.add_argument('--reward_coef', type=float, default=1, help='coef on reward loss')
 parser.add_argument('--reward_iou_thr', type=float, default=0.5, help='IoU threshold for rewarding')
 parser.add_argument("--stage", type=int, default=1, help="stage index")
+parser.add_argument("--amp", type=int, default=0, help="amp training")
 args = parser.parse_args()
 
 torch.manual_seed(222)
@@ -92,7 +93,15 @@ logging.info('Train: %d, dev: %d' % (len(train_data), len(dev_data)))
 optimizer = getattr(torch.optim, args.optim)(encoder.parameters(), lr=args.lr)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3, min_lr=1.0e-8, verbose=True)
 
+if args.amp == 1:
+    from apex import amp
+    logging.info(f"AMP training, opt level: O1")
+    encoder, optimizer = amp.initialize(encoder, optimizer, opt_level="O1")
+
 hyp = {'epoch': 0, 'step': 0, 'optimizer': optimizer.state_dict(), 'scheduler': scheduler.state_dict(), 'sampler': train_loader.batch_sampler.state_dict(), 'best_dev_metric': -float('inf')}
+
+if args.amp == 1:
+    hyp['amp'] = amp.state_dict()
 
 if os.path.isfile(latest_model_path) and os.path.isfile(hyp_path):
     logging.info("Load from checkpoint: %s and %s" % (latest_model_path, hyp_path))
@@ -101,6 +110,8 @@ if os.path.isfile(latest_model_path) and os.path.isfile(hyp_path):
     optimizer.load_state_dict(hyp['optimizer'])
     scheduler.load_state_dict(hyp['scheduler'])
     train_loader.batch_sampler.load_state_dict(hyp['sampler'])
+    if args.amp == 1:
+        amp.load_state_dict(hyp['amp'])
 
 def main():
     global hyp
@@ -114,10 +125,14 @@ def main():
         for i_batch, sample in enumerate(train_loader):
             optimizer.zero_grad()
             rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, fsr_pred, fsr_label, pose_loss, reward_loss = encoder(sample, training=True, pose_on=(args.pose_coef!=0), fsr_on=(args.fsr_coef!=0), pose_sample_rate=args.pose_sample_rate, reward_on=(args.reward_coef!=0), stage=args.stage)
-
             l = args.det_coef * (rpn_cls_loss + rpn_reg_loss) + args.fsr_coef * (rcnn_cls_loss + rcnn_reg_loss)  + args.pose_coef * pose_loss + args.reward_coef * reward_loss
-            l.backward()
-            torch.nn.utils.clip_grad_norm(encoder.parameters(), args.clip)
+            if args.amp == 1:
+                with amp.scale_loss(l, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.clip)
+            else:
+                l.backward()
+                torch.nn.utils.clip_grad_norm(encoder.parameters(), args.clip)
             optimizer.step()
             ls.append(l.item())
             rpn_cls_ls.append(rpn_cls_loss.item())
@@ -127,6 +142,7 @@ def main():
             pose_ls.append(pose_loss.item())
             reward_ls.append(reward_loss.item())
             hyp['step'] += 1
+            # logging.info(f"{l}")
             if hyp['step'] % args.info_interval == 0:
                 mean_loss = sum(ls) / len(ls)
                 mean_rpn_cls, mean_rpn_reg, mean_rcnn_cls, mean_rcnn_reg, mean_pose_loss, mean_reward_loss = sum(rpn_cls_ls) / len(rpn_cls_ls), sum(rpn_reg_ls) / len(rpn_reg_ls), sum(rcnn_cls_ls) / len(rcnn_cls_ls), sum(rcnn_reg_ls) / len(rcnn_reg_ls), sum(pose_ls) / len(pose_ls), sum(reward_ls)/len(reward_ls)
@@ -134,12 +150,14 @@ def main():
                 logging.info(pcont)
                 open(log_file, 'a+').write(pcont+'\n')
                 torch.save(encoder.state_dict(), open(latest_model_path, 'wb'))
+                if args.amp == 1:
+                    hyp['amp'] = amp.state_dict()
                 torch.save(hyp, open(hyp_path, 'wb'))
                 ls, rpn_cls_ls, rpn_reg_ls, rcnn_cls_ls, rcnn_reg_ls, pose_ls = [], [], [], [], [], []
             if hyp['step'] % args.det_interval == 0:
                 dev_out = os.path.join(args.output, 'dev-proposal.pkl')
                 eval_pred(encoder, dev_loader, dev_out, top_k=50, stage=args.stage)
-                iou2mAP = ap_iou.get_ap_iou(dev_out)
+                iou2mAP = ap_iou.get_ap_iou(dev_out, iou_thrs=[0.5])
                 mAP = iou2mAP[0.5]
                 if mAP > hyp['best_dev_metric']:
                     torch.save(encoder.state_dict(), open(best_dev_path, 'wb'))
