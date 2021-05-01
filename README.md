@@ -45,12 +45,12 @@ See training script for details.
 ./scripts/eval.sh --help  # show arguments
 ./scripts/eval.sh --data .data/fswild/loader/ --stage 1
 ```
-See evaluation script for details. Note computing MSA/AP@Acc requires an off-the-shelf fingerspelling recognizer, which can be downloaded [here](https://drive.google.com/file/d/1M4hdgZNlEVqkRZW75ItWg0seReq7GGAq/view?usp=sharing).
+See evaluation script for details. Note computing MSA/AP@Acc requires an off-the-shelf fingerspelling recognizer, which can be downloaded [here](https://drive.google.com/file/d/173L_qpjdKKPxdKk5jaDhVklnQXwI1e8l/view?usp=sharing).
 
 ## ToDo:
 - [x] Code for fingerspelling detector
 - [x] Code for evaluation
-- [ ] Code for ASL data preparation from scratch
+- [x] Code for ASL data preparation from scratch
 
 
 ## Reference
