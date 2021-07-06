@@ -47,6 +47,9 @@ See training script for details.
 ```
 See evaluation script for details. Note computing MSA/AP@Acc requires an off-the-shelf fingerspelling recognizer, which can be downloaded [here](https://drive.google.com/file/d/173L_qpjdKKPxdKk5jaDhVklnQXwI1e8l/view?usp=sharing).
 
+## Pretrained models:
+An FS-detector trained on ChicagoFSWild+ can be downloaded [here](https://drive.google.com/file/d/1zl1Pq54E55mrYQHE4qwZzVz-mBr3U0w5/view?usp=sharing).
+
 ## ToDo:
 - [x] Code for fingerspelling detector
 - [x] Code for evaluation
