@@ -45,7 +45,7 @@ See training script for details.
 ./scripts/eval.sh --help  # show arguments
 ./scripts/eval.sh --data .data/fswild/loader/ --stage 1
 ```
-See evaluation script for details. Note computing MSA/AP@Acc requires an off-the-shelf fingerspelling recognizer, which can be downloaded [here](https://drive.google.com/file/d/173L_qpjdKKPxdKk5jaDhVklnQXwI1e8l/view?usp=sharing).
+See evaluation script for details. Note computing MSA/AP@Acc requires an off-the-shelf fingerspelling recognizer, which can be downloaded [here](https://drive.google.com/file/d/1HgweY-H24vM-5b67Tu2GBCWA4Pz1-bC-/view?usp=sharing).
 
 ## Pretrained models:
 The fingerspelling detector trained on ChicagoFSWild+ (AP@0.5: 0.448) can be downloaded [here](https://drive.google.com/file/d/1zl1Pq54E55mrYQHE4qwZzVz-mBr3U0w5/view?usp=sharing).
